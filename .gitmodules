@@ -1,6 +1,7 @@
 [submodule "openwrt"]
-	url = https://github.com/photonicat/rockchip_rk3568_openwrt
+	url = https://github.com/tjjh89017/openwrt
 	path = openwrt
+	branch = openwrt-22.03-photonicat
 [submodule "u-boot"]
 	url = https://github.com/photonicat/rockchip_rk3568_uboot
 	path = u-boot
