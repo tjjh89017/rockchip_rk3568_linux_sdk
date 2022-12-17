@@ -11,11 +11,10 @@ jobs:
     name: Tagged Release
     runs-on: self-hosted
     steps:
-      - name: clean up
-        run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+      #- name: clean up
+      #  run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
-        with:
-          submodules: true
+      - run: git -c protocol.version=2 submodule update --init --force --depth=1
       
       - name: Build
         run: |
