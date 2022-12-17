@@ -12,7 +12,7 @@ jobs:
     runs-on: self-hosted
     steps:
       #- run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
-      - uses: tjjh89017/checkout@hotfix
+      - uses: tjjh89017/checkout@submodules
         with:
           submodules: true
       #- run: |
