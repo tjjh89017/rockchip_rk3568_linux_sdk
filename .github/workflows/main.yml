@@ -36,7 +36,12 @@ jobs:
           prerelease: false
           files: |
             rockdev/pack/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img.xz
+            rockdev/openwrt-sdcard.img.gz
+            rockdev/openwrt-update-sdcard.img.gz
 
       - name: clean up
+        if: always()
         run: |
           rm -rf rockdev/pack/*
+          rm -rf rockdev/openwrt-sdcard.img.gz
+          rm -rf rockdev/openwrt-update-sdcard.img.gz
