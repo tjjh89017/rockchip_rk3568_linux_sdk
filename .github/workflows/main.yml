@@ -11,6 +11,8 @@ jobs:
     name: Tagged Release
     runs-on: self-hosted
     steps:
+      - name: clean up
+        run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
         with:
           submodules: true
