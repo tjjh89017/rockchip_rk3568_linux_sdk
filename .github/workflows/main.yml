@@ -22,7 +22,8 @@ jobs:
 
       - name: push image to release
         uses: "marvinpinto/action-automatic-releases@latest"
-        with: repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        files: |
-          rockdev/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            rockdev/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img
