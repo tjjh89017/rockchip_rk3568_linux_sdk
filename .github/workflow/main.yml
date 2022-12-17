@@ -1,0 +1,28 @@
+---
+name: tagged-release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  tagged-release:
+    name: Tagged Release
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - run: git submodule update --init --recursive --depth 1
+      
+      - name: Build
+        run: |
+          ./rk3568-config-photonicat-openwrt.sh
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          ./build.sh
+
+      - name: push image to release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with: repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          rockdev/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img
