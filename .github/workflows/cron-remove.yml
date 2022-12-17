@@ -1,0 +1,14 @@
+---
+name: Schedule clean up
+
+on:
+  schedule:
+    - cron: '0 0 * * 7'
+
+jobs:
+  schedule_remove:
+    runs-on: self-hosted
+    steps:
+      - name: Remove cache
+        run: |
+          rm -rf $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
