@@ -11,7 +11,7 @@ jobs:
     name: Tagged Release
     runs-on: self-hosted
     steps:
-      - run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+      #- run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
         with:
           persist-credentials: false
