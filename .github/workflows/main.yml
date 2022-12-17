@@ -13,6 +13,9 @@ jobs:
     steps:
       #- run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          submodules: true
       - run: |
           git submodule update --init --depth=1
           git submodule sync
