@@ -14,7 +14,7 @@ jobs:
       - uses: tjjh89017/checkout@submodules
         with:
           submodules: true
-          clean: false # for cache?
+          #clean: false # for cache?
       
       - name: Build
         run: |
@@ -22,6 +22,8 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           #./build.sh cleanall
           ./build.sh
+          ./build.sh openwrt-sdimg
+          ./build.sh openwrt-sdupdateimg
 
       - name: compress image
         run: |
