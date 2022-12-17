@@ -14,11 +14,13 @@ jobs:
       - uses: tjjh89017/checkout@submodules
         with:
           submodules: true
+          clean: false # for cache?
       
       - name: Build
         run: |
           ./rk3568-config-photonicat-openwrt.sh
           export CROSS_COMPILE=aarch64-linux-gnu-
+          #./build.sh cleanall
           ./build.sh
 
       - name: push image to release
