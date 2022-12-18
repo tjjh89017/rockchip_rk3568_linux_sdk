@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Remove cache
         run: |
-          rm -rf $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+          rm -rf *
