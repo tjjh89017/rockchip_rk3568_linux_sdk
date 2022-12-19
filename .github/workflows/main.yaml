@@ -54,6 +54,8 @@ jobs:
             rockdev/openwrt-update-sdcard.img.gz
 
   clean:
+    needs:
+      - publish
     if: always()
     runs-on: self-hosted
     steps:
