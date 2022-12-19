@@ -7,17 +7,20 @@ on:
       - "*"
 
 jobs:
-  tagged-release:
-    name: Tagged Release
+  checkout:
     runs-on: self-hosted
     steps:
       - uses: tjjh89017/checkout@submodules
         with:
           submodules: true
           #clean: false # for cache?
-      
-      - name: Build
-        run: |
+
+  build:
+    needs:
+      - checkout
+    runs-on: self-hosted
+    steps:      
+      - run: |
           ./rk3568-config-photonicat-openwrt.sh
           export CROSS_COMPILE=aarch64-linux-gnu-
           #./build.sh cleanall
@@ -25,10 +28,20 @@ jobs:
           ./build.sh openwrt-sdimg
           ./build.sh openwrt-sdupdateimg
 
+  compress: 
+    needs:
+      - build
+    runs-on: self-hosted
+    steps:
       - name: compress image
         run: |
           xz -T 0 -0 rockdev/pack/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img
 
+  publish:
+    needs:
+      - compress
+    runs-on: self-hosted
+    steps:
       - name: push image to release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -40,6 +53,10 @@ jobs:
             rockdev/openwrt-sdcard.img.gz
             rockdev/openwrt-update-sdcard.img.gz
 
+  clean:
+    if: always()
+    runs-on: self-hosted
+    steps:
       - name: clean up
         if: always()
         run: |
