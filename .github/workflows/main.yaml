@@ -1,5 +1,5 @@
 ---
-name: tagged-release
+name: Tag Release
 
 on:
   push:
@@ -17,26 +17,17 @@ jobs:
         with:
           submodules: true
 
-      - run: |
+      - name: build
+        run: |
           ./rk3568-config-photonicat-openwrt.sh
           ./build.sh
           ./build.sh openwrt-sdimg
           ./build.sh openwrt-sdupdateimg
 
-  compress: 
-    needs:
-      - build
-    runs-on: self-hosted
-    steps:
       - name: compress image
         run: |
           xz -T 0 -0 rockdev/pack/BOARDCONFIG-RK3568-PHOTONICAT-OPENWRT-DDR4-GPT-*.img
 
-  publish:
-    needs:
-      - compress
-    runs-on: self-hosted
-    steps:
       - name: push image to release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -48,12 +39,6 @@ jobs:
             rockdev/openwrt-sdcard.img.gz
             rockdev/openwrt-update-sdcard.img.gz
 
-  clean:
-    needs:
-      - publish
-    if: always()
-    runs-on: self-hosted
-    steps:
       - name: clean up
         if: always()
         run: |
