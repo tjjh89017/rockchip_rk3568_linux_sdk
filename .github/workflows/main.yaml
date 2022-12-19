@@ -10,22 +10,15 @@ env:
   CROSS_COMPILE: aarch64-linux-gnu-
 
 jobs:
-  checkout:
+  build:
     runs-on: self-hosted
-    steps:
+    steps:      
       - uses: tjjh89017/checkout@submodules
         with:
           submodules: true
-          #clean: false # for cache?
 
-  build:
-    needs:
-      - checkout
-    runs-on: self-hosted
-    steps:      
       - run: |
           ./rk3568-config-photonicat-openwrt.sh
-          #./build.sh cleanall
           ./build.sh
           ./build.sh openwrt-sdimg
           ./build.sh openwrt-sdupdateimg
