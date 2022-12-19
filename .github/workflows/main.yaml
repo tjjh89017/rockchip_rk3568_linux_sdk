@@ -6,6 +6,9 @@ on:
     tags:
       - "*"
 
+env:
+  CROSS_COMPILE: aarch64-linux-gnu-
+
 jobs:
   checkout:
     runs-on: self-hosted
@@ -22,7 +25,6 @@ jobs:
     steps:      
       - run: |
           ./rk3568-config-photonicat-openwrt.sh
-          export CROSS_COMPILE=aarch64-linux-gnu-
           #./build.sh cleanall
           ./build.sh
           ./build.sh openwrt-sdimg
