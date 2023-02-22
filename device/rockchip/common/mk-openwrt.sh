@@ -47,13 +47,11 @@ make download -j$(nproc)
 #find dl -size -1024c -exec rm -f {} \;
 
 USING_DATE=$(date +%Y%m%d)
-echo "${USING_DATE}" > ./files/etc/rom-version
+echo "${USING_DATE}" > ./target/linux/rockchip/armv8/base-files/etc/rom-version
 
-if [ -d "./files/lib/modules" ]; then
-    rm -rf "./files/lib/modules" || true
-fi
-
-tar -zxf ../kmods/kmods-openwrt.tar.gz -C ./files
+rm -f ./bin/targets/rockchip/armv8/*.img 2>/dev/null || true
+rm -f ./bin/targets/rockchip/armv8/*.gz 2>/dev/null || true
+rm -f ./bin/targets/rockchip/armv8/sha256sum 2>/dev/null || true
 
 make -j$(nproc) V=s
 RET=$?

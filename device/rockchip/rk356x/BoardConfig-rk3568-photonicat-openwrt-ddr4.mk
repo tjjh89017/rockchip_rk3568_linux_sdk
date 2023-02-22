@@ -3,7 +3,7 @@
 # Target arch
 export RK_ARCH=arm64
 # Uboot defconfig
-export RK_UBOOT_DEFCONFIG=rk3568
+export RK_UBOOT_DEFCONFIG=rk3568-openwrt
 # Uboot image format type: fit(flattened image tree)
 export RK_UBOOT_FORMAT_TYPE=fit
 # Kernel defconfig
@@ -44,11 +44,11 @@ export RK_ROOTFS_IMG=rockdev/rootfs.${RK_ROOTFS_TYPE}
 # Set ramboot image type
 export RK_RAMBOOT_TYPE=
 # Set oem partition type, including ext2 squashfs
-export RK_OEM_FS_TYPE=ext2
+export RK_OEM_FS_TYPE=fat
 # Set userdata partition type, including ext2, fat
 export RK_USERDATA_FS_TYPE=ext4
 #OEM config
-export RK_OEM_DIR=oem_normal
+export RK_OEM_DIR=
 # OEM build on buildroot
 #export RK_OEM_BUILDIN_BUILDROOT=YES
 #userdata config
@@ -61,3 +61,4 @@ export RK_DISTRO_MODULE=
 export RK_BOARD_PRE_BUILD_SCRIPT=app-build.sh
 
 export RK_ROOTFS_SYSTEM=openwrt
+export RK_PACKAGE_FILE=rk356x-openwrt-package-file

@@ -238,31 +238,22 @@ function build_openwrt_sdimg()
 	IMAGE_PATH="${TOP_DIR}/rockdev"
 	BASE_IMG="${TOP_DIR}/device/rockchip/rockimg/sd.img.gz"
 	TARGET_IMG="${IMAGE_PATH}/openwrt-sdcard.img"
-	BOOT_IMG="${IMAGE_PATH}/openwrt-sdbootfs.img"
+	BOOT_IMG="${TOP_DIR}/openwrt/bin/targets/rockchip/armv8/sd-bootfs.img"
+	SD_ROOTFS_IMG="${TOP_DIR}/openwrt/bin/targets/rockchip/armv8/rootfs-squashfs.img"
 
-	if [ ! -f "${TOP_DIR}/kernel/arch/arm64/boot/Image" ]; then
-		echo "No kernel found, please build kernel first!"
+	if [ ! -f "${BOOT_IMG}" ]; then
+		echo "No bootfs found, please build OpenWRT first!"
 		exit 1
 	fi
 
-	if [ ! -f "${IMAGE_PATH}/rootfs.img" ]; then
+	if [ ! -f "${SD_ROOTFS_IMG}" ]; then
 		echo "No OpenWRT system image found, please build OpenWRT first!"
 		exit 1
 	fi
 
-	dd if=/dev/zero of="${BOOT_IMG}" bs=1M count=128
-	/sbin/mkfs.vfat -F 32 "${BOOT_IMG}"
-
-	mmd -i "${BOOT_IMG}" ::extlinux
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/device/rockchip/rockimg/sd-extlinux.conf" ::extlinux/extlinux.conf
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/kernel/arch/arm64/boot/Image" ::Image
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/kernel/arch/arm64/boot/dts/rockchip/rk3568-photonicat-openwrt.dtb" ::rk3568-photonicat-openwrt.dtb
-
 	gunzip -c "${BASE_IMG}" > "${TARGET_IMG}"
 	dd if="${BOOT_IMG}" of="${TARGET_IMG}" bs=1M count=128 seek=1 conv=notrunc
-	dd if="${IMAGE_PATH}/rootfs.img" of="${TARGET_IMG}" bs=1M count=1024 seek=129 conv=notrunc
-
-	rm -f "${BOOT_IMG}"
+	dd if="${SD_ROOTFS_IMG}" of="${TARGET_IMG}" bs=1M count=1024 seek=129 conv=notrunc
 
 	gzip -f "${TARGET_IMG}"
 }
@@ -308,40 +299,35 @@ function build_openwrt_sdupdateimg()
 	TARGET_IMG="${IMAGE_PATH}/openwrt-update-sdcard.img"
 	BOOT_IMG="${IMAGE_PATH}/openwrt-sdbootfs.img"
 	UPDATEIMAGE_IMG="${IMAGE_PATH}/openwrt-sdimgfs.img"
+        SD_BOOTFS_IMG="${TOP_DIR}/openwrt/bin/targets/rockchip/armv8/sd-bootfs.img"
+        SD_ROOTFS_IMG="${TOP_DIR}/openwrt/bin/targets/rockchip/armv8/rootfs-squashfs.img"
 
-	if [ ! -f "${TOP_DIR}/kernel/arch/arm64/boot/Image" ]; then
-		echo "No kernel found, please build kernel first!"
+	if [ ! -f "${SD_BOOTFS_IMG}" ]; then
+		echo "No bootfs found, please build OpenWRT first!"
 		exit 1
 	fi
 
-	if [ ! -f "${IMAGE_PATH}/rootfs.img" ]; then
+	if [ ! -f "${SD_ROOTFS_IMG}" ]; then
 		echo "No OpenWRT system image found, please build OpenWRT first!"
-		exit 1
-	fi
-
-	if [ ! -f "${IMAGE_PATH}/boot.img" ]; then
-		echo "No boot image found, please build kernel first!"
 		exit 1
 	fi
 
 	dd if=/dev/zero of="${BOOT_IMG}" bs=1M count=128
 	/sbin/mkfs.vfat -F 32 "${BOOT_IMG}"
 
-	mmd -i "${BOOT_IMG}" ::extlinux
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/device/rockchip/rockimg/sdupdate-extlinux.conf" ::extlinux/extlinux.conf
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/kernel/arch/arm64/boot/Image" ::Image
-	mcopy -i "${BOOT_IMG}" "${TOP_DIR}/kernel/arch/arm64/boot/dts/rockchip/rk3568-photonicat-openwrt.dtb" ::rk3568-photonicat-openwrt.dtb
+	cp -v "${SD_BOOTFS_IMG}" "${BOOT_IMG}"
+	mcopy -i "${BOOT_IMG}" -on "${TOP_DIR}/device/rockchip/rockimg/sdupdate-extlinux.conf" ::extlinux/extlinux.conf
 
 	mkdir -p "${IMAGE_PATH}/updatefs"
-	gzip -c "${IMAGE_PATH}/boot.img" > "${IMAGE_PATH}/updatefs/boot.img.gz"
-	gzip -c "${IMAGE_PATH}/rootfs.img" > "${IMAGE_PATH}/updatefs/rootfs.img.gz"
+	gzip -c "${SD_BOOTFS_IMG}" > "${IMAGE_PATH}/updatefs/bootfs.img.gz"
+	gzip -c "${SD_ROOTFS_IMG}" > "${IMAGE_PATH}/updatefs/rootfs.img.gz"
 
 	genext2fs -B 4096 -b 524288 -d "${IMAGE_PATH}/updatefs" "${UPDATEIMAGE_IMG}"
 	rm -rf "${IMAGE_PATH}/updatefs"
 
 	gunzip -c "${BASE_IMG}" > "${TARGET_IMG}"
 	dd if="${BOOT_IMG}" of="${TARGET_IMG}" bs=1M count=128 seek=1 conv=notrunc
-	dd if="${IMAGE_PATH}/rootfs.img" of="${TARGET_IMG}" bs=1M count=1024 seek=129 conv=notrunc
+	dd if="${SD_ROOTFS_IMG}" of="${TARGET_IMG}" bs=1M count=1024 seek=129 conv=notrunc
 	dd if="${UPDATEIMAGE_IMG}" of="${TARGET_IMG}" bs=1M count=2048 seek=1153 conv=notrunc
 
 	rm -f "${BOOT_IMG}"
@@ -690,15 +676,6 @@ function build_modules(){
 	mkdir -p "${OPENWRT_FULL_KMODS_DIR}"
 	find "${COMMON_KMODS_DIR}/lib/modules/" -name "*.ko" -exec cp {} "${OPENWRT_FULL_KMODS_DIR}" \;
 
-	if [ -d "$TOP_DIR/modules-backports" ]; then
-		cd "$TOP_DIR/modules-backports" && \
-			make ARCH=$RK_ARCH KLIB_BUILD="$TOP_DIR/kernel" KLIB="$COMMON_KMODS_DIR" defconfig-rk3568 && \
-			make ARCH=$RK_ARCH KLIB_BUILD="$TOP_DIR/kernel" KLIB="$COMMON_KMODS_DIR" -j$RK_JOBS && \
-			make ARCH=$RK_ARCH KLIB_BUILD="$TOP_DIR/kernel" KLIB="$COMMON_KMODS_DIR" install && cd -
-
-		find "${COMMON_KMODS_DIR}/lib/modules/${RELEASE_NAME}/updates" -name "*.ko" -exec cp {} "${OPENWRT_FULL_KMODS_DIR}" \;
-	fi
-
 	tar -czf "${TOP_DIR}/kmods/kmods.tar.gz" -C "${COMMON_KMODS_DIR}" . --owner=0 --group=0
 	tar -czf "${TOP_DIR}/kmods/kmods-openwrt.tar.gz" -C "${OPENWRT_KMODS_DIR}" . --owner=0 --group=0
 
@@ -858,6 +835,7 @@ function build_rootfs(){
 
 	RK_ROOTFS_DIR=.rootfs
 	ROOTFS_IMG=${RK_ROOTFS_IMG##*/}
+	OEM_IMG=""
 
 	if [ "x${RK_ROOTFS_SYSTEM}" != "xubuntu" ]; then
 		rm -rf $RK_ROOTFS_IMG $RK_ROOTFS_DIR
@@ -879,7 +857,8 @@ function build_rootfs(){
 			;;
 		openwrt)
 			build_openwrt
-			ROOTFS_IMG="openwrt/build_dir/target-aarch64_cortex-a53_musl/linux-armvirt_64/root.squashfs"
+			ROOTFS_IMG="openwrt/bin/targets/rockchip/armv8/rootfs-squashfs.img"
+			OEM_IMG="openwrt/bin/targets/rockchip/armv8/bootfs.img"
 			;;
 		*)
 			if [ -n $RK_CFG_BUILDROOT ];then
@@ -897,6 +876,11 @@ function build_rootfs(){
 		mkdir -p ${RK_ROOTFS_IMG%/*}
 		rm -f $RK_ROOTFS_IMG
 		ln -rsf $TOP_DIR/$ROOTFS_IMG $RK_ROOTFS_IMG
+	fi
+
+	if [ -f "$OEM_IMG" ]; then
+		mkdir -p ${RK_ROOTFS_IMG%/*}
+		ln -rsf $TOP_DIR/$OEM_IMG ${RK_ROOTFS_IMG%/*}/oem.img
 	fi
 
 
